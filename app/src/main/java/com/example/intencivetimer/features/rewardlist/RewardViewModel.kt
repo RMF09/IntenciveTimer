@@ -29,6 +29,4 @@ class RewardViewModel @Inject constructor(
     }*/
 
     val rewards = rewardDao.getAllRewards().asLiveData()
-
-
 }

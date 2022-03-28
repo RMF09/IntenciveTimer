@@ -1,7 +1,6 @@
 package com.example.intencivetimer.features.addeditreward
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -44,7 +43,6 @@ interface AddEditRewardActions {
 fun AddEditRewardScreen(navController: NavController) {
     val viewModel: AddEditRewardViewModel = hiltViewModel()
     val rewardName by viewModel.rewardName.observeAsState("")
-    Log.e("TAG", "AddEditRewardScreen: $rewardName", )
     val rewardNameIsError by viewModel.rewardNameIsError.observeAsState(false)
 
     val rewardChanceInPercent by viewModel.rewardChance.observeAsState(0)
@@ -57,8 +55,18 @@ fun AddEditRewardScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                AddEditRewardViewModel.Event.RewardCreated -> navController.popBackStack()
-                AddEditRewardViewModel.Event.RewardUpdated -> navController.popBackStack()
+                AddEditRewardViewModel.Event.RewardCreated -> {
+                    navController.previousBackStackEntry?.savedStateHandle?.set(
+                        ADD_EDIT_REWARD_RESULT, RESULT_REWARD_ADDED
+                    )
+                    navController.popBackStack()
+                }
+                AddEditRewardViewModel.Event.RewardUpdated -> {
+                    navController.previousBackStackEntry?.savedStateHandle?.set(
+                        ADD_EDIT_REWARD_RESULT, RESULT_REWARD_UPDATED
+                    )
+                    navController.popBackStack()
+                }
             }.exhaustive
         }
     }

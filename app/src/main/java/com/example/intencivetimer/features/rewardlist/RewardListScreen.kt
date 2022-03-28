@@ -13,12 +13,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,11 +30,14 @@ import androidx.navigation.NavController
 import com.example.intencivetimer.FullscreenDestinations
 import com.example.intencivetimer.R
 import com.example.intencivetimer.core.IconKey
-import com.example.intencivetimer.core.ui.theme.*
+import com.example.intencivetimer.core.ui.theme.IntenciveTimerTheme
+import com.example.intencivetimer.core.ui.theme.listBottomPadding
 import com.example.intencivetimer.data.Reward
+import com.example.intencivetimer.features.addeditreward.ADD_EDIT_REWARD_RESULT
 import com.example.intencivetimer.features.addeditreward.ARG_REWARD_ID
+import com.example.intencivetimer.features.addeditreward.RESULT_REWARD_ADDED
+import com.example.intencivetimer.features.addeditreward.RESULT_REWARD_UPDATED
 import kotlinx.coroutines.launch
-import java.net.IDN
 
 @Composable
 fun RewardListScreen(
@@ -41,13 +46,39 @@ fun RewardListScreen(
 ) {
     //val dummyList by viewModel.dummyReward.observeAsState(listOf())
     val rewards by viewModel.rewards.observeAsState(listOf())
+
+    val addEditRewardResult =
+        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<String>(
+            ADD_EDIT_REWARD_RESULT
+        )?.observeAsState()
+
+    val scaffoldState = rememberScaffoldState()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = addEditRewardResult) {
+        addEditRewardResult?.value?.let {
+            when (it) {
+                RESULT_REWARD_ADDED -> {
+                    scaffoldState.snackbarHostState.showSnackbar(context.getString(R.string.reward_added))
+                }
+                RESULT_REWARD_UPDATED ->
+                    scaffoldState.snackbarHostState.showSnackbar(context.getString(R.string.reward_updated))
+            }
+            navController.currentBackStackEntry?.savedStateHandle?.remove<String>(
+                ADD_EDIT_REWARD_RESULT
+            )
+        }
+    }
+
+
     ScreenContent(
         rewards = rewards,
         onAddNewRewardClicked = { navController.navigate(FullscreenDestinations.AddEditReward.route) },
         onRewardItemClicked = { id ->
             navController.navigate(FullscreenDestinations.AddEditReward.route + "?$ARG_REWARD_ID=$id")
-        }
-
+        },
+        scaffoldState = scaffoldState
     )
 }
 
@@ -55,7 +86,8 @@ fun RewardListScreen(
 private fun ScreenContent(
     rewards: List<Reward>,
     onAddNewRewardClicked: () -> Unit,
-    onRewardItemClicked: (Long) -> Unit
+    onRewardItemClicked: (Long) -> Unit,
+    scaffoldState: ScaffoldState = rememberScaffoldState()
 ) {
     Scaffold(
         topBar = {
@@ -63,6 +95,7 @@ private fun ScreenContent(
                 Text(text = stringResource(id = R.string.reward_list))
             })
         },
+        scaffoldState = scaffoldState,
         floatingActionButton = {
             FloatingActionButton(onClick = onAddNewRewardClicked) {
                 Icon(
@@ -203,7 +236,8 @@ private fun Preview() {
                         chanceInPercent = 2
                     )
                 ),
-                onAddNewRewardClicked = {}, onRewardItemClicked = {}
+                onAddNewRewardClicked = {},
+                onRewardItemClicked = {}
             )
         }
     }

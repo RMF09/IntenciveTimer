@@ -9,6 +9,8 @@
     <string name="edit_reward">Edit Reward</string>
     <string name="add_reward">Add Reward</string>
     <string name="reward_name">Reward Name</string>
+    <string name="reward_added">New Reward Added!</string>
+    <string name="reward_updated">Reward Updated!</string>
     <string name="navigate_back">navigate back</string>
     <string name="close">Close</string>
     <string name="select_icon">Select Icon</string>
